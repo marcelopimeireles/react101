@@ -1,12 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaGithubAlt, FaPlus, FaSpinner } from 'react-icons/fa';
-import { Container, Form, SubmitButton } from './styles';
+import { Container, Form, SubmitButton, List } from './styles';
 import api from '../../services/api';
 
 const Main = () => {
   const [loading, setLoading] = useState(false);
   const [newRepo, setNewRepo] = useState('');
   const [repositories, setRepositories] = useState([]);
+  const localReposName = 'repositories';
+
+  const updateLocalRepos = () => {
+    const localRepos = localStorage.getItem(localReposName);
+    console.log(localRepos);
+    if (localRepos) setRepositories(JSON.parse(localRepos));
+  };
+
+  useEffect(() => {
+    updateLocalRepos();
+  }, [setRepositories]);
 
   const handleInputChange = (e) => {
     setNewRepo(e.target.value);
@@ -23,7 +34,9 @@ const Main = () => {
       name: response.data.full_name,
     };
 
-    setRepositories([...repositories, data]);
+    const newRepos = [...repositories, data];
+    localStorage.setItem(localReposName, JSON.stringify(newRepos));
+    setRepositories(newRepos);
     setNewRepo('');
     setLoading(false);
   };
@@ -49,6 +62,15 @@ const Main = () => {
           )}
         </SubmitButton>
       </Form>
+
+      <List>
+        {repositories.map((repository, index) => (
+          <li key={index}>
+            <span>{repository.name}</span>
+            <a href="#">Detalhes</a>
+          </li>
+        ))}
+      </List>
     </Container>
   );
 };
