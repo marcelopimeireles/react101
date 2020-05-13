@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import api from '../../services/api';
 
 import Container from '../../components/Container';
-import { Loading, Owner } from './styles';
+import { Loading, Owner, IssueList } from './styles';
 
 function Repository({ match }) {
   const repoName = decodeURIComponent(match.params.repository);
@@ -13,7 +13,7 @@ function Repository({ match }) {
   const [loading, setLoading] = useState(true);
 
   const fetchAll = async () => {
-    const [repository, issues] = await Promise.all([
+    const [newRrepository, newIssues] = await Promise.all([
       api.get(`/repos/${repoName}`),
       api.get(`/repos/${repoName}/issues`, {
         params: {
@@ -23,8 +23,8 @@ function Repository({ match }) {
       }),
     ]);
 
-    setRepository(repository.data);
-    setIssues(issues.data);
+    setRepository(newRrepository.data);
+    setIssues(newIssues.data);
     setLoading(false);
   };
 
@@ -44,6 +44,23 @@ function Repository({ match }) {
         <h1>{Repository.name}</h1>
         <p>{repository.description}</p>
       </Owner>
+      <IssueList>
+        {issues.map((issue) => (
+          <li key={String(issue.id)}>
+            <img src={issue.user.avatar_url} alt={issue.user.login} />
+            <div>
+              <strong>
+                <a href={issue.html_url}>{issue.title}</a>
+                {issue.label &&
+                  issue.label.map((label) => (
+                    <span key={String(label.id)}>{label.name}</span>
+                  ))}
+                <p>{issue.user.login}</p>
+              </strong>
+            </div>
+          </li>
+        ))}
+      </IssueList>
     </Container>
   );
 }
